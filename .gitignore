@@ -1,0 +1,14 @@
+# Java
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Gradle 
+.gradle
+app/build/
+
+# Configuration file
+config.json
