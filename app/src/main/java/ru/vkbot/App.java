@@ -3,10 +3,13 @@ package ru.vkbot;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.*;
+
 
 public class App {
     public static void main(String[] args) {
@@ -47,28 +50,33 @@ public class App {
             e.printStackTrace();
         }
 
+
+        ExecutorService service = Executors.cachedThreadPool();
+
         while (true) {
             List<Message> messages = bot.getMessages();
             if (!messages.isEmpty()) {
                 for (Message message : messages) {
-                    System.out.println(message.toString());
-                    Integer userId = message.getFromId();
-                    try {
-                        switch (message.getText()) {
-                            case "Привет":
-                                bot.sendMessage(userId, "И тебе").execute();
-                                break;
-                            case "Кнопки":
-                                bot.sendMessage(userId, "Вот тебе кнопки").keyboard(keyboard).execute();
-                                break;
-                            default:
-                                bot.sendMessage(userId, "Не понял").execute();
-                                break;
+                    service.execute(() -> {
+                        System.out.println(message.toString());
+                        Integer userId = message.getFromId();
+                        try {
+                            switch (message.getText()) {
+                                case "Привет":
+                                    bot.sendMessage(userId, "И тебе").execute();
+                                    break;
+                                case "Кнопки":
+                                    bot.sendMessage(userId, "Вот тебе кнопки").keyboard(keyboard).execute();
+                                    break;
+                                default:
+                                    bot.sendMessage(userId, "Не понял").execute();
+                                    break;
+                            }
+                            bot.getTs();
+                        } catch (ApiException | ClientException e) {
+                            e.printStackTrace();
                         }
-                        bot.getTs();
-                    } catch (ApiException | ClientException e) {
-                        e.printStackTrace();
-                    }
+                    });
                 }
             }
             try {
